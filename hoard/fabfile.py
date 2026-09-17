@@ -5,7 +5,6 @@ from fabric.api import cd, env, local, prefix, settings
 from fabric.operations import run
 from hoard.settings.base import SCHEDULER_REDIS_DB
 
-
 BASE_DIR = "/home/projects/hoard/hoard"
 CODE_DIR = BASE_DIR + "/hoard"
 
@@ -25,39 +24,38 @@ env.sentry_org_slug = "cruncher"
 
 
 def migrate(do_reload=True):
-    with (cd(CODE_DIR)):
-        with prefix(env.activate):
-            run("python manage.py migrate")
+    with cd(CODE_DIR), prefix(env.activate):
+        run("python manage.py migrate")
     if do_reload:
         reload_server()
 
 
 def collectstatic():
-    with (cd(CODE_DIR)):
-        with prefix(env.activate):
-            run("python manage.py collectstatic --noinput")
+    with cd(CODE_DIR), prefix(env.activate):
+        run("python manage.py collectstatic --noinput")
 
 
 def pull_code():
-    with (cd(BASE_DIR)):
+    with cd(BASE_DIR):
         run(f"git pull origin {env.git_branch}")
         run("git submodule update --init --recursive")
 
 
 def commit_push():
-    with (cd(BASE_DIR)):
+    with cd(BASE_DIR):
         git_commit()
         git_push()
 
 
 def git_commit():
-    with (cd(BASE_DIR)):
+    with cd(BASE_DIR):
         run('git commit -am "dunno"')
 
 
 def git_push():
-    with (cd(BASE_DIR)):
+    with cd(BASE_DIR):
         run(f"git push origin {env.git_branch}")
+
 
 def reload_server():
     for proc_group, redis_prefix in env.gunicorn_process:
@@ -71,8 +69,9 @@ def reload_server():
             )
             run(f"sudo supervisorctl start {proc_group}")
 
+
 def clear_cache():
-    with (cd(CODE_DIR), prefix(env.activate)):
+    with cd(CODE_DIR), prefix(env.activate):
         run("python manage.py clear_cache")
 
 
@@ -82,7 +81,7 @@ def load():
 
 
 def compilemessages(do_reload=True):
-    with (cd(CODE_DIR), prefix(env.activate)):
+    with cd(CODE_DIR), prefix(env.activate):
         run("python manage.py compilemessages")
     if do_reload:
         reload_server()
@@ -103,7 +102,7 @@ def local_git_push():
 
 
 def fix_cms():
-    with (cd(CODE_DIR), prefix(env.activate)):
+    with cd(CODE_DIR), prefix(env.activate):
         run("python manage.py cms fix-tree")
 
 
@@ -114,12 +113,14 @@ def build_static():
         local("make literal site")
         local(f"rsync -avz -e ssh static/build {env.hosts[0]}:{BASE_DIR}/tmp/static/")
 
+
 def sentry_new_release():
     rev = local("/usr/bin/git rev-parse HEAD", capture=True)
     local(
         f"sentry-cli releases --org {env.sentry_org_slug} "
         f"--project {env.sentry_project_slug}  new {rev} --finalize"
     )
+
 
 def deploy():
     local_git_pull()
@@ -139,23 +140,23 @@ def deploy():
 
 
 def crontab():
-    with (cd(BASE_DIR)):
+    with cd(BASE_DIR):
         run(f"crontab {BASE_DIR}/conf/prod/crontab")
         run("crontab -l")
 
 
 def ssh():
-    with (cd(CODE_DIR)):
+    with cd(CODE_DIR):
         run("bash")
 
 
 def version():
-    with (cd(CODE_DIR), prefix(env.activate)):
+    with cd(CODE_DIR), prefix(env.activate):
         run("python manage.py --version")
 
 
 def clear_cache_buster(cache_buster):
-    with (cd(CODE_DIR), prefix(env.activate)):
+    with cd(CODE_DIR), prefix(env.activate):
         run(f"python manage.py clear_cache_buster --buster={cache_buster}")
 
 
@@ -167,18 +168,24 @@ def generate_cache_buster():
 
 def get_remote_db():
     with cd(CODE_DIR), prefix(env.activate):
-        run(f"pg_dump --no-owner --no-acl  -f ~/backup/{env.remote_db}.dmp {env.remote_db}")
-    local(f"rsync -avzh --progress --stats -e ssh {env.hosts[0]}:backup/{env.remote_db}.dmp .")
-    
+        run(
+            f"pg_dump --no-owner --no-acl  -f ~/backup/{env.remote_db}.dmp {env.remote_db}"
+        )
+    local(
+        f"rsync -avzh --progress --stats -e ssh {env.hosts[0]}:backup/{env.remote_db}.dmp ."
+    )
+
+
 def sync_media():
     local(f"rsync -avz -e ssh {env.hosts[0]}:{BASE_DIR}/tmp/media/ ../tmp/media/")
+
 
 def sync_get():
     get_remote_db()
     local(f"dropdb --if-exists {env.local_db}")
     local(f"createdb -E utf8 {env.local_db}")
     local(f"psql -q -o /dev/null -d {env.local_db} -f {env.remote_db}.dmp")
-    local(f'rm {env.remote_db}.dmp')
+    local(f"rm {env.remote_db}.dmp")
     local("python manage.py migrate")
     local('python manage.py set_fake_passwords --password="admin"')
     local(

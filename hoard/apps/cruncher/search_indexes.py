@@ -1,14 +1,12 @@
 import re
 
 from cms.models.pagemodel import Page
-from easy_thumbnails.files import get_thumbnailer
-from haystack import indexes
-
 from django.contrib.auth.models import AnonymousUser
 from django.test.client import RequestFactory
 from django.utils.encoding import force_text
 from django.utils.translation import activate
-
+from easy_thumbnails.files import get_thumbnailer
+from haystack import indexes
 
 rf = RequestFactory()
 
@@ -34,7 +32,7 @@ class PageIndex(indexes.SearchIndex):
         activate(lang)
 
         text = ""
-        self.prepared_data = super(PageIndex, self).prepare(obj)
+        self.prepared_data = super().prepare(obj)
 
         self.prepared_data["type"] = "page"
         self.prepared_data["date"] = (
@@ -43,14 +41,14 @@ class PageIndex(indexes.SearchIndex):
 
         for placeholder in obj.placeholders.all():
             for plugin in placeholder.cmsplugin_set.filter(language=lang):
-                instance, plugin_type = plugin.get_plugin_instance()
+                instance, _ = plugin.get_plugin_instance()
 
                 if hasattr(instance, "search_fields"):
                     try:
                         text += " ".join(
                             getattr(instance, field) for field in instance.search_fields
                         )
-                    except Exception:
+                    except Exception:  # noqa: BLE001, S110
                         pass
 
             for plugin in placeholder.cmsplugin_set.filter(
@@ -59,7 +57,7 @@ class PageIndex(indexes.SearchIndex):
                 if self.prepared_data.get("image"):
                     continue
 
-                instance, plugin_type = plugin.get_plugin_instance()
+                instance, _ = plugin.get_plugin_instance()
                 if (
                     instance
                     and instance.image

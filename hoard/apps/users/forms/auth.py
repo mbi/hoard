@@ -1,6 +1,7 @@
 import os
 from email.mime.image import MIMEImage
 
+from apps.cruncher.forms import CruncherFormRenderer
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login
@@ -8,9 +9,6 @@ from django.contrib.auth.forms import PasswordResetForm as DjangoPasswordResetFo
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
-
-from apps.cruncher.forms import CruncherFormRenderer
-
 
 UserModel = get_user_model()
 
@@ -76,17 +74,19 @@ class PasswordResetForm(CruncherFormRenderer, DjangoPasswordResetForm):
             html_email = loader.render_to_string(html_email_template_name, context)
             email_message.attach_alternative(html_email, "text/html")
 
-            img = open(
+            with open(
                 os.path.join(settings.BASE_DIR, "static", "images", "email-logo.png"),
                 "rb",
-            ).read()
-            logo_image = MIMEImage(img)
-            logo_image.add_header("Content-ID", "<email-logo.png>")
-            logo_image.add_header(
-                "Content-Disposition", "inline", filename="email-logo.png"
-            )
-            logo_image.add_header("Content-Type", "image/png", name="email-logo.png")
-            email_message.attach(logo_image)
+            ).read() as img:
+                logo_image = MIMEImage(img)
+                logo_image.add_header("Content-ID", "<email-logo.png>")
+                logo_image.add_header(
+                    "Content-Disposition", "inline", filename="email-logo.png"
+                )
+                logo_image.add_header(
+                    "Content-Type", "image/png", name="email-logo.png"
+                )
+                email_message.attach(logo_image)
 
         email_message.mixed_subtype = "related"
         email_message.send()

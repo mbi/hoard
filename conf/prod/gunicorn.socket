@@ -12,5 +12,3 @@ SocketUser=hoard
 
 [Install]
 WantedBy=sockets.target
-
-

@@ -32,10 +32,7 @@ class CruncherErrorList(ErrorList):
         return format_html_join(
             "{}",
             '<label {} class="error-label">{}</label>',
-            (
-                ("for={}".format(self._html_id) if self._html_id else "", e)
-                for e in self
-            ),
+            ((f"for={self._html_id}" if self._html_id else "", e) for e in self),
         )
 
 
@@ -101,7 +98,7 @@ class CruncherFormRenderer(forms.Form):
                 # CSS classes applied.
                 css_classes = bf.css_classes()
                 if css_classes:
-                    html_class_attr = ' class="%s"' % css_classes
+                    html_class_attr = f' class="{css_classes}"'
 
                 if bf.label:
                     label = conditional_escape(bf.label)
@@ -111,8 +108,7 @@ class CruncherFormRenderer(forms.Form):
 
                 if field.help_text:
                     help_text = mark_safe(
-                        '<label for="%s" class="help-label">%s</label>'
-                        % (bf.id_for_label, field.help_text)
+                        f'<label for="{bf.id_for_label}" class="help-label">{field.help_text}</label>'
                     )
                 else:
                     help_text = ""

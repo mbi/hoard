@@ -12,7 +12,6 @@
 </CORSConfiguration>
 """
 
-
 THUMBNAIL_PROCESSORS = (
     "easy_thumbnails.processors.colorspace",
     "easy_thumbnails.processors.autocrop",
@@ -31,19 +30,19 @@ STORAGES = {
 }
 THUMBNAIL_DEFAULT_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_ACCESS_KEY_ID = ""
+AWS_SECRET_ACCESS_KEY = ""
 
-AWS_STORAGE_BUCKET_NAME = ''
-AWS_S3_REGION_NAME = 'ch-gva-2'
-AWS_DEFAULT_ACL = 'public-read'
-AWS_BUCKET_ACL = 'public-read'
+AWS_STORAGE_BUCKET_NAME = ""
+AWS_S3_REGION_NAME = "ch-gva-2"
+AWS_DEFAULT_ACL = "public-read"
+AWS_BUCKET_ACL = "public-read"
 AWS_AUTO_CREATE_BUCKET = True
-AWS_S3_HOST = 'sos-ch-gva-2.exo.io'
+AWS_S3_HOST = "sos-ch-gva-2.exo.io"
 AWS_S3_USE_SSL = True
-AWS_S3_CUSTOM_DOMAIN = '%s.sos-ch-gva-2.exo.io' % AWS_STORAGE_BUCKET_NAME
-AWS_S3_ENDPOINT_URL = 'https://%s' % AWS_S3_CUSTOM_DOMAIN
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.sos-ch-gva-2.exo.io"
+AWS_S3_ENDPOINT_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}"
 # AWS_QUERYSTRING_AUTH = False
 
-MEDIA_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
-AWS_S3_ENDPOINT_URL = 'https://%s' % AWS_S3_HOST
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+AWS_S3_ENDPOINT_URL = f"https://{AWS_S3_HOST}"

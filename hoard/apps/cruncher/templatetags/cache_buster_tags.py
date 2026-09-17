@@ -4,7 +4,6 @@ from django import template
 from django.core.cache import cache
 from django.utils.crypto import get_random_string
 
-
 register = template.Library()
 
 

@@ -14,7 +14,6 @@ from django.utils.translation import activate, get_language
 
 from ..timestamps import to_timestamp
 
-
 register = template.Library()
 
 
@@ -42,12 +41,12 @@ def change_lang(context, lang=None, *args, **kwargs):
     finally:
         activate(cur_language)
 
-    ret = "%s" % url
+    ret = f"{url}"
     if context["request"] and context["request"].GET:
         ret += "?"
         get_items = []
         for k, v in context["request"].GET.items():
-            get_items.append("{}={}".format(k, v))
+            get_items.append(f"{k}={v}")
         ret += "&".join(get_items)
     return ret
 
@@ -109,13 +108,12 @@ def to_str(v):
 
 @register.simple_tag(takes_context=False)
 def render_json_static(static_type):
-    with open(os.path.join(settings.BASE_DIR, "package.json"), "r") as json_file:
+    with open(os.path.join(settings.BASE_DIR, "package.json")) as json_file:
         data = json.load(json_file).get(static_type)
-        if data:
-            if static_type == "style":
-                return format_html_join(
-                    "\n", '<link rel="stylesheet" href="/{}" />', [[d] for d in data]
-                )
+        if data and static_type == "style":
+            return format_html_join(
+                "\n", '<link rel="stylesheet" href="/{}" />', [[d] for d in data]
+            )
     return ""
 
 
@@ -151,9 +149,12 @@ def remove_linebreaks(parser, token):
     if len(contents) == 2:
         args = contents[1]
         split_args = args.split("=")
-        if len(split_args) == 2:
-            if split_args[0] == "indent" and split_args[1].isdigit():
-                indent = int(split_args[1])
+        if (
+            len(split_args) == 2
+            and split_args[0] == "indent"
+            and split_args[1].isdigit()
+        ):
+            indent = int(split_args[1])
 
     nodelist = parser.parse(("end_remove_linebreaks",))
     parser.delete_first_token()

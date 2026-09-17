@@ -55,7 +55,7 @@
     {# Warn admins about empty elements, buttons without type, images with no alt #}
     <link rel="stylesheet" href="{{STATIC_URL}}hoard/classes/warn-not-cms.css" />
     {% endif %}
-    
+
     {% if debug %}
     <script type="importmap">{
         "imports": {
@@ -69,7 +69,7 @@
         }
     }</script>
     {% endif %}
-    
+
     {% render_block "css" %}
     {% block head %}{% endblock %}
     {% block extrahead %}{% endblock %}
@@ -77,8 +77,8 @@
 </head>
 
 <body {% block bodytag %}{% endblock bodytag %}>
-    
-    
+
+
     {% block body %}{% endblock body %}
 
     {% if debug %}<!-- scripts -->{% endif %}
@@ -108,4 +108,3 @@
     {% endif %}
 </body>
 </html>
-

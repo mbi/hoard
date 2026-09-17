@@ -3,18 +3,17 @@ from urllib.parse import quote as url_quote
 from django import template
 from django.conf import settings
 
-
 register = template.Library()
 
 
 def title_and_url(obj):
     try:
         url = (settings.BASE_URL or "") + obj.get_absolute_url()
-    except Exception:
+    except TypeError:
         url = None
     try:
         title = obj.__str__()
-    except Exception:
+    except TypeError:
         title = None
 
     return url, title

@@ -7,7 +7,7 @@ from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 
 
-class ParlerAllTranslationsMixin(object):
+class ParlerAllTranslationsMixin:
     def all_translations(self, obj):
         _all_translations = [
             c.get("code") for c in settings.PARLER_LANGUAGES.get(settings.SITE_ID)
@@ -46,11 +46,7 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
 
         try:
             url = reverse(
-                "{}:{}_{}_change".format(
-                    self.admin_site.name,
-                    obj._meta.app_label,
-                    obj._meta.object_name.lower(),
-                ),
+                f"{self.admin_site.name}:{obj._meta.app_label}_{obj._meta.object_name.lower()}_change",
                 args=(obj.pk,),
             )
         except NoReverseMatch:
@@ -58,9 +54,7 @@ class VerboseForeignKeyRawIdWidget(ForeignKeyRawIdWidget):
 
         return (
             mark_safe(
-                '<span class="pill"><a target="_blank" href="{}">{}</a></span>'.format(
-                    url, str(obj)
-                )
+                f'<span class="pill"><a target="_blank" href="{url}">{obj!s}</a></span>'
             ),
             "",
         )
@@ -78,20 +72,16 @@ class VerboseManyToManyRawIdWidget(ManyToManyRawIdWidget):
 
             try:
                 url = reverse(
-                    "{}:{}_{}_change".format(
-                        self.admin_site.name,
-                        obj._meta.app_label,
-                        obj._meta.object_name.lower(),
-                    ),
+                    f"{self.admin_site.name}:{obj._meta.app_label}_{obj._meta.object_name.lower()}_change",
                     args=(obj.pk,),
                 )
             except NoReverseMatch:
                 url = ""  # Admin not registered for target model.
 
             result.append(
-                '<span class="pill"><a target="_blank"  href="{}">{}</a>'
+                f'<span class="pill"><a target="_blank"  href="{url}">{obj!s}</a>'
                 '&nbsp;<a class="deletelink rel-delete-link" '
-                'data-rel="{}" href="#"></a></span>'.format(url, str(obj), obj.pk)
+                f'data-rel="{obj.pk}" href="#"></a></span>'
             )
 
         return mark_safe(" ".join(result)), ""

@@ -43,4 +43,3 @@ var Redactor = (function ($) {
         }
     };
 })(jQuery);
-
