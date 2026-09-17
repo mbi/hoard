@@ -5,10 +5,10 @@ from fabric.api import cd, env, local, prefix, settings
 from fabric.operations import run
 from hoard.settings.base import SCHEDULER_REDIS_DB
 
-BASE_DIR = "/home/projects/hoard/hoard"
+BASE_DIR = "/home/mbi/Code/hoard/"
 CODE_DIR = BASE_DIR + "/hoard"
 
-env.hosts = ["hoard@hoard.mbi.me"]
+env.hosts = ["mbi@188.154.141.88"]
 env.activate = f"source {BASE_DIR}/.venv/bin/activate"
 env.remote_db = "hoard"
 env.local_db = "hoard"

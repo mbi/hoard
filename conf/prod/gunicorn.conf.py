@@ -11,6 +11,6 @@ bind = "unix:/home/mbi/Code/hoard/tmp/gunicorn.sock"
 pidfile = "/home/mbi/Code/hoard/tmp/gunicorn.pid"
 logfile = "/home/mbi/Code/hoard/logs/gunicorn.log"
 loglevel = "error"
-user = "hoard"
+user = "mbi"
 proc_name = "hoard"
 timeout = 60
