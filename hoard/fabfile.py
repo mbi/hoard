@@ -1,7 +1,7 @@
 import random
 import string
 
-from fabric.api import cd, env, local, prefix, settings
+from fabric.api import cd, env, local, prefix
 from fabric.operations import run
 from hoard.settings.base import SCHEDULER_REDIS_DB
 
@@ -101,19 +101,6 @@ def local_git_push():
     local(f"git push origin {env.git_branch}")
 
 
-def fix_cms():
-    with cd(CODE_DIR), prefix(env.activate):
-        run("python manage.py cms fix-tree")
-
-
-def build_static():
-    local("rm -f static/build/*.js")
-    with settings(warn_only=True):
-        # local("node --experimental-json-modules ./build.js")
-        local("make literal site")
-        local(f"rsync -avz -e ssh static/build {env.hosts[0]}:{BASE_DIR}/tmp/static/")
-
-
 def sentry_new_release():
     rev = local("/usr/bin/git rev-parse HEAD", capture=True)
     local(
@@ -124,15 +111,12 @@ def sentry_new_release():
 
 def deploy():
     local_git_pull()
-    cache_buster = generate_cache_buster()
-    build_static()
     pull_code()
     requirements()
     migrate(False)
     crontab()
     # build_styleguide(False)
     collectstatic()
-    clear_cache_buster(cache_buster)
     compilemessages(False)
     reload_server()
     # fix_cms()
