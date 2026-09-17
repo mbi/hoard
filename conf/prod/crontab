@@ -4,4 +4,4 @@
 # @daily ~/hoard/.venv/bin/python ~/hoard/hoard/manage.py update_index -r -v0
 
 @daily pg_dump -f ~/backup/hoard.daily.dmp hoard
-1 * * * * /bin/bash -c 'pg_dump -f  ~/backup/hoard.hourly.`date +"\%H"`.dmp hoard'
+# 1 * * * * /bin/bash -c 'pg_dump -f  ~/backup/hoard.hourly.`date +"\%H"`.dmp hoard'
