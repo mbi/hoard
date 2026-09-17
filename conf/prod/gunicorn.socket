@@ -2,7 +2,7 @@
 Description=hoard gunicorn socket
 
 [Socket]
-ListenStream=/home/projects/hoard/hoard/tmp/gunicorn.sock
+ListenStream=/home/mbi/Code/hoard/tmp/gunicorn.sock
 # Our service won't need permissions for the socket, since it
 # inherits the file descriptor by socket activation
 # only the nginx daemon will need access to the socket

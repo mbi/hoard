@@ -8,7 +8,7 @@ from hoard.settings.base import SCHEDULER_REDIS_DB
 BASE_DIR = "/home/projects/hoard/hoard"
 CODE_DIR = BASE_DIR + "/hoard"
 
-env.hosts = ["hoard@hoard.cruncher.ch"]
+env.hosts = ["hoard@hoard.mbi.me"]
 env.activate = f"source {BASE_DIR}/.venv/bin/activate"
 env.remote_db = "hoard"
 env.local_db = "hoard"
