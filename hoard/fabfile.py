@@ -15,7 +15,7 @@ env.local_db = "hoard"
 env.git_branch = "main"
 env.gunicorn_process = [
     ("hoard_gunicorn", None),
-    ("hoard_rqworker:*", ":workers:hoard-worker-*"),
+    # ("hoard_rqworker:*", ":workers:hoard-worker-*"),
 ]
 
 env.forward_agent = True
@@ -101,26 +101,14 @@ def local_git_push():
     local(f"git push origin {env.git_branch}")
 
 
-def sentry_new_release():
-    rev = local("/usr/bin/git rev-parse HEAD", capture=True)
-    local(
-        f"sentry-cli releases --org {env.sentry_org_slug} "
-        f"--project {env.sentry_project_slug}  new {rev} --finalize"
-    )
-
-
 def deploy():
     local_git_pull()
     pull_code()
     requirements()
     migrate(False)
     crontab()
-    # build_styleguide(False)
     collectstatic()
-    compilemessages(False)
     reload_server()
-    # fix_cms()
-    sentry_new_release()
 
 
 def crontab():
