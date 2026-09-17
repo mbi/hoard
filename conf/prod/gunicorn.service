@@ -1,0 +1,21 @@
+[Unit]
+Description=hoard gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+Type=notify
+# the specific user that our service will run as
+User=hoard
+Group=hoard
+RuntimeDirectory=gunicorn
+WorkingDirectory=/home/projects/hoard/hoard/hoard
+ExecStart=/home/projects/hoard/hoard/.venv/bin/gunicorn  hoard.wsgi:application -c /home/projects/hoard/hoard/conf/prod/gunicorn.conf.py 
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+

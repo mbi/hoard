@@ -1,0 +1,67 @@
+
+{% extends "admin/base.html" %}
+{% load i18n cruncher_tags %}
+{% get_available_languages as LANGUAGES %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block userlinks %}
+    {{block.super}}
+
+
+
+<span style="margin:0 0.5rem"></span>
+{% for lang in LANGUAGES %}
+{% if LANGUAGE_CODE == lang.0 %}<strong>{% endif %} <a class="lang-button" href="{% change_lang lang.0 %}">{{ lang.0 }}</a>{% if LANGUAGE_CODE == lang.0 %}</strong>{% endif %}
+{% if not forloop.last  %} / {% endif %}
+{% endfor %}
+
+
+<style type="text/css">
+    body #user-tools #logout-form button,
+    body #user-tools {
+        font-size: 0.75rem;
+    }
+    body #user-tools .lang-button {
+        font-size: 0.85rem;
+    }
+
+    .filerFile .image-preview {
+        vertical-align: top;
+        display: inline-block;
+    }
+    .filerFile > a > video {
+        display: none;
+    }
+
+    .change-form .flex-container > .cke {
+        max-width: 800px;
+    }
+</style>
+
+<script type="text/javascript">
+window.addEventListener('DOMContentLoaded', function() {
+    let cleanDeeplHTML = (htmlin) => {
+        return htmlin.replace(/<\/p>./g, '</p>').trim();
+    }
+
+    window.setTimeout( () => {
+        document.querySelectorAll('.django-ckeditor-widget textarea, textarea.CMS_CKEditor[contenteditable]').forEach((html_field) => {
+            if (
+                typeof CKEDITOR === 'object' &&
+                typeof CKEDITOR.instances === 'object' &&
+                typeof CKEDITOR.instances[html_field.id] === 'object'
+            ) {
+                html_field.addEventListener('change', (e) => {
+                    let html_out = cleanDeeplHTML(html_field.value)
+                    console.log(html_field, 'changed', html_out)
+                    CKEDITOR.instances[html_field.id].setData(html_out)
+                });
+                console.log('Change event listened on', html_field, 'added');
+            }
+        });
+    }, 500)
+});
+
+</script>
+{% endblock %}
+
