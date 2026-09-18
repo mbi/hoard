@@ -5,6 +5,22 @@ from django.test import TestCase
 from .models import Category, Header, Hoard
 
 
+def add_one(data):
+    return {"value": data["value"] + 1}
+
+
+def double(data):
+    return {"value": data["value"] * 2}
+
+
+def broken(data):
+    raise ValueError("boom")
+
+
+def returns_list(data):
+    return [1, 2]
+
+
 class RecordViewTests(TestCase):
     def setUp(self):
         self.category = Category.objects.create(name="Logs", slug="logs")
@@ -102,3 +118,55 @@ class RecordViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Hoard.objects.count(), 1)
+
+    def test_preprocessors_applied_in_configured_order(self):
+        self.category.preprocessors = [
+            "apps.hoarder.tests.add_one",
+            "apps.hoarder.tests.double",
+        ]
+        self.category.save()
+
+        response = self.post(body={"value": 3})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Hoard.objects.get(pk=response.json()["id"]).data, {"value": 8})
+
+        self.category.preprocessors = [
+            "apps.hoarder.tests.double",
+            "apps.hoarder.tests.add_one",
+        ]
+        self.category.save()
+
+        response = self.post(body={"value": 3})
+
+        self.assertEqual(Hoard.objects.get(pk=response.json()["id"]).data, {"value": 7})
+
+    def test_failing_preprocessor_is_skipped(self):
+        self.category.preprocessors = [
+            "apps.hoarder.tests.broken",
+            "apps.hoarder.tests.add_one",
+        ]
+        self.category.save()
+
+        response = self.post(body={"value": 3})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Hoard.objects.get(pk=response.json()["id"]).data, {"value": 4})
+
+    def test_unimportable_preprocessor_is_skipped(self):
+        self.category.preprocessors = ["apps.hoarder.tests.does_not_exist"]
+        self.category.save()
+
+        response = self.post(body={"value": 3})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Hoard.objects.get(pk=response.json()["id"]).data, {"value": 3})
+
+    def test_non_dict_return_is_skipped(self):
+        self.category.preprocessors = ["apps.hoarder.tests.returns_list"]
+        self.category.save()
+
+        response = self.post(body={"value": 3})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Hoard.objects.get(pk=response.json()["id"]).data, {"value": 3})

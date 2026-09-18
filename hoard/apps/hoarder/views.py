@@ -21,5 +21,5 @@ def record(request, slug):
     except json.JSONDecodeError:
         return HttpResponseBadRequest("Invalid payload")
 
-    hoard = category.hoards.create(data=payload)
+    hoard = category.hoards.create(data=category.preprocess(payload))
     return JsonResponse({"id": str(hoard.id)})

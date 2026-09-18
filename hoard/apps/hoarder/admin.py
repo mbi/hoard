@@ -11,7 +11,10 @@ from .models import Category, Header, Hoard
 
 @admin.register(Hoard)
 class HoardAdmin(admin.ModelAdmin):
-    list_display = ("category", "recorded", "data_excerpt")
+    list_display = (
+        "recorded",
+        "category",
+    )
 
     readonly_fields = ("pretty_json",)
 
@@ -25,7 +28,7 @@ class HoardAdmin(admin.ModelAdmin):
         )  # <-- your field here
 
         # Truncate the data. Alter as needed
-        response = response[:500_000]
+        response = response[:3_500_000]
 
         # Get the Pygments formatter
         formatter = HtmlFormatter(style="colorful")
