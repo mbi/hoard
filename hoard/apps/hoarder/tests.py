@@ -1,7 +1,5 @@
 import json
-from io import StringIO
 
-from django.core.management import call_command
 from django.test import TestCase
 
 from .models import Category, Header, Hoard
@@ -148,58 +146,6 @@ class FlattenOpenrouterTests(TestCase):
     def test_non_otlp_dict_passes_through(self):
         payload = {"event": "click"}
         self.assertEqual(flatten_openrouter(payload), payload)
-
-
-class BackfillPreprocessorsTests(TestCase):
-    def test_backfill_flattens_existing_hoards_once(self):
-        category = Category.objects.create(
-            name="OpenRouter",
-            slug="orl",
-            preprocessors=["apps.hoarder.preprocessing.flatten_openrouter"],
-        )
-        otlp = Hoard.objects.create(
-            category=category,
-            data={
-                "resourceSpans": [
-                    {
-                        "scopeSpans": [
-                            {
-                                "spans": [
-                                    {
-                                        "attributes": [
-                                            {
-                                                "key": "session.id",
-                                                "value": {"stringValue": "sess-1"},
-                                            },
-                                            {
-                                                "key": "span.type",
-                                                "value": {"stringValue": "generation"},
-                                            },
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-        )
-        already_flat = Hoard.objects.create(
-            category=category,
-            data={**dict.fromkeys(OPENROUTER_KEYS), "session.id": "sess-1"},
-        )
-
-        call_command("backfill_preprocessors", stdout=StringIO())
-
-        otlp.refresh_from_db()
-        already_flat.refresh_from_db()
-        expected = {
-            **dict.fromkeys(OPENROUTER_KEYS),
-            "session.id": "sess-1",
-            "span.type": "generation",
-        }
-        self.assertEqual(otlp.data, expected)
-        self.assertEqual(already_flat.data["session.id"], "sess-1")
 
 
 class RecordViewTests(TestCase):

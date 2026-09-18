@@ -64,3 +64,6 @@ class Hoard(models.Model):
 
     def __str__(self) -> str:
         return f"{self.category.name}: {str(self.data)[:100]}..."
+
+    class Meta:
+        ordering = ["-recorded"]
