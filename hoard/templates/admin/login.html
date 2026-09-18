@@ -1,0 +1,13 @@
+{% extends "admin/login.html" %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        .login #header {
+            display:none;
+        }
+        .submit-row input {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
