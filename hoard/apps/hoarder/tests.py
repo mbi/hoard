@@ -1,5 +1,6 @@
 import json
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from .models import Category, Header, Hoard
@@ -20,6 +21,56 @@ def broken(data):
 
 def returns_list(data):
     return [1, 2]
+
+
+class CategoryPreprocessorValidationTests(TestCase):
+    def test_valid_path_saves(self):
+        category = Category(
+            name="OpenRouter",
+            slug="orl",
+            preprocessors=["apps.hoarder.tests.add_one"],
+        )
+
+        category.save()  # does not raise
+
+        self.assertTrue(Category.objects.filter(pk=category.pk).exists())
+
+    def test_unimportable_path_rejected_on_save_and_clean(self):
+        category = Category(
+            name="OpenRouter",
+            slug="orl",
+            preprocessors=["apps.hoarder.tests.does_not_exist"],
+        )
+
+        with self.assertRaises(ValidationError):
+            category.save()
+        with self.assertRaisesMessage(ValidationError, "Cannot import preprocessor"):
+            category.full_clean()
+        self.assertEqual(Category.objects.count(), 0)
+
+    def test_non_callable_path_rejected(self):
+        category = Category(
+            name="OpenRouter",
+            slug="orl",
+            preprocessors=["apps.hoarder.tests.OPENROUTER_KEYS"],
+        )
+
+        with self.assertRaisesMessage(ValidationError, "not callable"):
+            category.save()
+        self.assertEqual(Category.objects.count(), 0)
+
+    def test_non_list_value_rejected(self):
+        category = Category(
+            name="OpenRouter",
+            slug="orl",
+            preprocessors="apps.hoarder.tests.add_one",
+        )
+
+        with self.assertRaisesMessage(
+            ValidationError, "must be a list of dotted import paths"
+        ):
+            category.save()
+        self.assertEqual(Category.objects.count(), 0)
 
 
 class FlattenOpenrouterTests(TestCase):
@@ -281,8 +332,10 @@ class RecordViewTests(TestCase):
         self.assertEqual(Hoard.objects.get(pk=response.json()["id"]).data, {"value": 4})
 
     def test_unimportable_preprocessor_is_skipped(self):
-        self.category.preprocessors = ["apps.hoarder.tests.does_not_exist"]
-        self.category.save()
+        # .update() bypasses save(), which rejects unimportable paths.
+        Category.objects.filter(pk=self.category.pk).update(
+            preprocessors=["apps.hoarder.tests.does_not_exist"]
+        )
 
         response = self.post(body={"value": 3})
 

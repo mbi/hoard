@@ -1,8 +1,23 @@
 import uuid
 
 import sentry_sdk
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.module_loading import import_string
+
+
+def validate_preprocessors(value):
+    if not isinstance(value, list) or not all(isinstance(p, str) for p in value):
+        raise ValidationError("Preprocessors must be a list of dotted import paths.")
+    for path in value:
+        try:
+            fn = import_string(path)
+        except ImportError as exc:
+            raise ValidationError(
+                f"Cannot import preprocessor {path!r}: {exc}"
+            ) from exc
+        if not callable(fn):
+            raise ValidationError(f"Preprocessor {path!r} is not callable.")
 
 
 class Category(models.Model):
@@ -12,6 +27,7 @@ class Category(models.Model):
     preprocessors = models.JSONField(
         default=list,
         blank=True,
+        validators=[validate_preprocessors],
         help_text=(
             "Dotted paths of functions applied to the payload before storage. "
             "Each function takes a dict and returns a dict."
@@ -23,6 +39,10 @@ class Category(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        validate_preprocessors(self.preprocessors)
+        super().save(*args, **kwargs)
 
     def preprocess(self, data: dict) -> dict:
         # A failing preprocessor is skipped (logged to Sentry) and the
